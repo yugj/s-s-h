@@ -22,5 +22,7 @@ public class PersistenceTest {
 		p.setCreatetime(Calendar.getInstance());
 		sf.openSession().persist(p);
 		sf.close();
+		
+		//test
 	}
 }
