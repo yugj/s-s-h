@@ -9,7 +9,7 @@
 
         <!-- Database connection settings -->
         <property name="connection.driver_class">com.mysql.jdbc.Driver</property>
-        <property name="connection.url">jdbc:mysql://localhost/test</property>
+        <property name="connection.url">jdbc:mysql://localhost:3306/test</property>
         <property name="connection.username">root</property>
         <property name="connection.password">root</property>
 
@@ -17,7 +17,7 @@
         <property name="connection.pool_size">1</property>
 
         <!-- SQL dialect -->
-       <!--  <property name="dialect">org.hibernate.dialect.MySQLDialect</property> -->
+       <property name="dialect">org.hibernate.dialect.MySQLDialect</property>
 
         <!-- Enable Hibernate's automatic session context management -->
         <property name="current_session_context_class">thread</property>
@@ -30,7 +30,11 @@
 
         <!-- Drop and re-create the database schema on startup -->
         <property name="hbm2ddl.auto">update</property>
-
+        
+        
+        <mapping class = "cn.yugj.hibernate.persistence.Person"/>
+        <mapping class = "cn.yugj.hibernate.persistence.Test"/>
+		
     </session-factory>
 
 </hibernate-configuration>
