@@ -72,15 +72,18 @@ public class PersistenceTest {
 	
 	/**
 	 * 立即加载对象
+	 * 和load一样，都是先加载缓存数据，没有才发SQL语句查找
 	 */
 	@Test
 	public void testGet() {
         Session session = sf.getCurrentSession();
         session.beginTransaction();
-        Person p = (Person) session.load(Person.class, 1);
-        session.getTransaction().commit();
+        Person p = (Person) session.get(Person.class, 1);
+        session.clear();
+        Person p2 = (Person) session.get(Person.class, 1);
         System.out.println(p.getId());
         System.out.println(p.getName());
+        session.getTransaction().commit();
     }
 	
 	
@@ -122,5 +125,43 @@ public class PersistenceTest {
         session.saveOrUpdate(p);
         session.getTransaction().commit();
     }
+
+	@Test
+    public void testFlush() {
+        Session session = sf.getCurrentSession();
+        session.beginTransaction();
+        Person t = (Person)session.load(Person.class , 1);
+        t.setName( "tttt");
+         //强制同步缓存和数据库内容
+        session.flush();
+        t.setName( "ttttt");
+        session.getTransaction().commit();
+         //session.close();
+    }
+	
+	/**
+	 * 当上下文里面没session则创建session，有则不创建
+	 * getCurrentSession commit后自动关闭
+	 */
+	@Test
+	public void testGetCurrentSession() { 
+		Session session = sf.getCurrentSession();
+		session.beginTransaction();
+		session.getTransaction().commit();
+		System.out.println("currentSession:" + session.isOpen());
+	}
+	
+	/**
+	 *    永远打开新的session
+	 * openSession需手动关闭session
+	 * 并设置；current_session_context_class
+	 */
+	@Test
+	public void testOpenSession() { 
+		Session session = sf.openSession();
+		session.beginTransaction();
+		session.getTransaction().commit();
+		System.out.println("openSession:" + session.isOpen());
+	}
 
 }
