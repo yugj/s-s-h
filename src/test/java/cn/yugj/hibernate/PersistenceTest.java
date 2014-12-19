@@ -2,6 +2,9 @@ package cn.yugj.hibernate;
 
 import java.util.Calendar;
 
+import org.hibernate.LockMode;
+import org.hibernate.LockOptions;
+import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.junit.After;
@@ -202,6 +205,29 @@ public class PersistenceTest {
 		cn.yugj.hibernate.persistence.Test t = (cn.yugj.hibernate.persistence.Test)s.createQuery("from Test t where t.id=14").uniqueResult();
 		cn.yugj.hibernate.persistence.Test tt = (cn.yugj.hibernate.persistence.Test)ss.createQuery("from Test t where t.id=14").uniqueResult();
 		System.out.println("t == tt ? " + (t == tt));
+	}
+	
+	/**
+	 * 悲观锁测试
+	 */
+	@Test
+	public void testPessimisticLock() {
+		Session session = sf.openSession();
+		Session session2 = sf.openSession();
+		String sql = "from Person";
+		Query query = session.createQuery(sql);
+		Query query2 = session2.createQuery(sql);
+		query.setLockOptions(LockOptions.UPGRADE);
+		query.list();
+		query2.list();
+	}
+	
+	@Test
+	public void testPessimisticLock2() {
+		Session session = sf.openSession();
+		Object load = session.load(Person.class, 1,LockOptions.UPGRADE);
+		Person p = (Person)load;
+		p.setName("cc");
 	}
 
 }
