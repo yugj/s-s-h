@@ -76,14 +76,17 @@ public class PersistenceTest {
 	 */
 	@Test
 	public void testGet() {
-        Session session = sf.getCurrentSession();
+        Session session = sf.openSession();
+        Session session2 = sf.openSession();
+        System.out.println("session == session2 ? " + (session == session2));
         session.beginTransaction();
         Person p = (Person) session.get(Person.class, 1);
-        session.clear();
-        Person p2 = (Person) session.get(Person.class, 1);
-        System.out.println(p.getId());
-        System.out.println(p.getName());
         session.getTransaction().commit();
+        
+        session2.beginTransaction();
+        Person p2 = (Person) session2.get(Person.class, 1);
+        session2.getTransaction().commit();
+        System.out.println("p1 == p2 ? " + (p == p2));
     }
 	
 	
@@ -162,6 +165,43 @@ public class PersistenceTest {
 		session.beginTransaction();
 		session.getTransaction().commit();
 		System.out.println("openSession:" + session.isOpen());
+	}
+	
+	/**
+	 * 乐观锁，更新前对象version+1，比较是否大于数据库version，大于则更新
+	 */
+	@Test 
+	public void testOptimisticLock() { 
+		Session s = sf.openSession();
+		Session ss = sf.openSession();
+		cn.yugj.hibernate.persistence.Test t = (cn.yugj.hibernate.persistence.Test)s.createQuery("from Test t where t.id=14").uniqueResult();
+		cn.yugj.hibernate.persistence.Test tt = (cn.yugj.hibernate.persistence.Test)ss.createQuery("from Test t where t.id=14").uniqueResult();
+		System.out.println("tt == t ? " + (tt == t));
+		System.out.println(tt.getVersion() + " : " + t.getVersion());
+		
+		s.beginTransaction();
+		t.setName("" + System.currentTimeMillis());
+		s.update(t);
+		s.getTransaction().commit();
+		
+		ss.beginTransaction();
+		tt.setName("change");
+		ss.update(tt);
+		ss.getTransaction().commit();
+	}
+	
+	/**
+	 * 不同session用createQuery查询的对象不同
+	 */
+	@Test
+	public void testHQL() { 
+		Session s = sf.openSession();
+		Session ss = sf.openSession();
+		
+		s.beginTransaction();
+		cn.yugj.hibernate.persistence.Test t = (cn.yugj.hibernate.persistence.Test)s.createQuery("from Test t where t.id=14").uniqueResult();
+		cn.yugj.hibernate.persistence.Test tt = (cn.yugj.hibernate.persistence.Test)ss.createQuery("from Test t where t.id=14").uniqueResult();
+		System.out.println("t == tt ? " + (t == tt));
 	}
 
 }
